@@ -76,7 +76,7 @@ class LaptopPilot:
         wheel_diameter = 0.1 # measure this
         self.ddrive = ActuatorConfiguration(wheel_distance, wheel_diameter) #look at your tutorial and see how to use this
         
-        v = u[0]# Linear forwards speed of robot 
+        v = 0.1# Linear forwards speed of robot 
         a = v/3# Linear forward acceleration
         turn_r = 0.3 # Radius of the turning arc
 
@@ -194,8 +194,8 @@ class LaptopPilot:
             self.path = TrajectoryGenerate(C[:,0], C[:,1])        
         
             # set trajectory variables (velocity, acceleration and turning arc radius)
-            self.path.path_to_trajectory(??, ??) #velocity and acceleration
-            self.path.turning_arcs(??) #turning radius
+            self.path.path_to_trajectory(self.v,self.a) #velocity and acceleration
+            self.path.turning_arcs(self.turn_r) #turning radius
             self.path.wp_id=0 #initialises the next waypoint
 
 
@@ -275,8 +275,7 @@ class LaptopPilot:
             #################### Trajectory sample #################################    
 
             # feedforward control: check wp progress and sample reference trajectory
-            self.path.wp_progress(self.t, p_robot, turn_r) # fill turning radius
-            p_ref, u_ref = self.path.p_u_sample(??) #sample the path at the current elapsetime (i.e., seconds from start of motion modelling)
+            
 
 
             #<actuator forward kinematic to determine u >
@@ -303,7 +302,11 @@ class LaptopPilot:
 
             p_robot = rigid_body_kinematics(p_robot, u, dt)
             p_robot[2] = p_robot[2] % (2 * np.pi)  # deal with angle wrapping          
-
+            
+            self.path.wp_progress(self.t, p_robot, self.turn_r) # fill turning radius
+            p_ref, u_ref = self.path.p_u_sample(self.t) #sample the path at the current elapsetime (i.e., seconds from start of motion modelling)
+            
+            self.generate_trajectory()
             # update for show_laptop.py     
             #print('line - 254' , p_robot)
             # > Think < #
